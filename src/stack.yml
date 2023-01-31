@@ -1,0 +1,46 @@
+version: '3.1'
+
+networks:
+  net_potatoes:
+    driver: bridge
+
+volumes:
+  vol_mongo:
+
+services:
+  db_potatoes:
+    image: mongo:4.4.6
+    restart: always
+    networks:
+     - net_potatoes
+    volumes:
+     - vol_mongo:/data/db71
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "mongouser"
+      MONGO_INITDB_ROOT_PASSWORD: "mongopwd"
+
+  app_potatoes:
+    image: tavaresdb/rotten-potatoes:v1
+    restart: always
+    ports:
+     - 5000:5000
+    networks:
+     - net_potatoes
+    environment:
+      MONGODB_HOST: "db_potatoes"
+      MONGODB_PORT: "27017"
+      MONGODB_USERNAME: "mongouser"
+      MONGODB_PASSWORD: "mongopwd"
+      MONGODB_DB: "admin"
+
+  admin_mongo:
+    image: mongo-express
+    restart: always
+    ports:
+     - 8081:8081
+    networks:
+     - net_potatoes
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: "mongouser"
+      ME_CONFIG_MONGODB_ADMINPASSWORD: "mongopwd"
+      ME_CONFIG_MONGODB_URL: "mongodb://mongouser:mongopwd@db_potatoes:27017/"
